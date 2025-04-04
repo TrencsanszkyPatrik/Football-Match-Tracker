@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Match Details</title>
+    <style>
+        :root {
+            --bg-color: #f5f5f5;
+            --text-color: #333;
+            --primary-color: #38003c;
+            --secondary-color: #e90052;
+            --card-bg: white;
+            --hover-bg: #f0f0f0;
+            --border-color: #ddd;
+            --progress-bg: #e0e0e0;
+            --success-color: #00ff85;
+            --warning-color: #ffd700;
+            --danger-color: #ff4444;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #1a1a1a;
+            --text-color: #fff;
+            --primary-color: #5c1f5f;
+            --secondary-color: #ff1a75;
+            --card-bg: #2d2d2d;
+            --hover-bg: #3d3d3d;
+            --border-color: #404040;
+            --progress-bg: #404040;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+
+        .match-header {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .match-info {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+            color: var(--text-color);
+            opacity: 0.8;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .info-item i {
+            font-size: 1.2em;
+        }
+
+        .match-teams {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 0;
+        }
+
+        .team {
+            flex: 1;
+            text-align: center;
+        }
+
+        .team-logo {
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+            margin-bottom: 10px;
+            transition: transform 0.3s ease;
+        }
+
+        .team-logo:hover {
+            transform: scale(1.1);
+        }
+
+        .team-name {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .score-container {
+            text-align: center;
+            margin: 0 30px;
+        }
+
+        .score {
+            font-size: 3em;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .half-time-score {
+            font-size: 0.9em;
+            color: var(--text-color);
+            opacity: 0.7;
+        }
+
+        .match-status {
+            display: inline-block;
+            padding: 8px 15px;
+            border-radius: 4px;
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .stats-card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .stats-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+            text-align: center;
+        }
+
+        .stat-row {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+            position: relative;
+        }
+
+        .stat-value {
+            flex: 2;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .stat-label {
+            text-align: center;
+            font-weight: bold;
+            flex: 1;
+            color: var(--text-color);
+            opacity: 0.8;
+        }
+
+        .stat-bar-container {
+            position: relative;
+            height: 20px;
+            background-color: var(--progress-bg);
+            border-radius: 10px;
+            overflow: hidden;
+            flex: 4;
+            margin: 0 10px;
+        }
+
+        .stat-bar {
+            height: 100%;
+            transition: width 0.3s ease;
+            position: absolute;
+            top: 0;
+            width: var(--bar-width, 0%);
+        }
+
+        .stat-bar.home {
+            right: 0;
+            background-color: var(--primary-color);
+        }
+
+        .stat-bar.away {
+            left: 0;
+            background-color: var(--secondary-color);
+        }
+
+        .cards-container {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+        }
+
+        .card {
+            width: 15px;
+            height: 20px;
+            border-radius: 2px;
+        }
+
+        .card.yellow {
+            background-color: var(--warning-color);
+        }
+
+        .card.red {
+            background-color: var(--danger-color);
+        }
+
+        .back-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background-color: var(--secondary-color);
+            transform: translateX(-5px);
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            background-color: var(--secondary-color);
+            transform: scale(1.1);
+        }
+
+        @media (max-width: 768px) {
+            .match-teams {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .score-container {
+                margin: 20px 0;
+            }
+
+            .team-logo {
+                width: 80px;
+                height: 80px;
+            }
+
+            .score {
+                font-size: 2.5em;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body data-theme="{{ 'dark' if dark_mode else 'light' }}">
+    <button class="theme-toggle" onclick="toggleTheme()">
+        {{ '🌙' if not dark_mode else '☀️' }}
+    </button>
+
+    <a href="javascript:void(0)" class="back-button" onclick="goBack()">
+        <i class="fas fa-arrow-left"></i> Back to Matches
+    </a>
+
+    <div class="match-header">
+        <div class="match-info">
+            <div class="info-item">
+                <i class="fas fa-trophy"></i>
+                {{ match.competition }}
+            </div>
+            <div class="info-item">
+                <i class="fas fa-calendar"></i>
+                {{ match.date }}
+            </div>
+            {% if match.venue %}
+            <div class="info-item">
+                <i class="fas fa-map-marker-alt"></i>
+                {{ match.venue }}
+            </div>
+            {% endif %}
+            {% if match.referee %}
+            <div class="info-item">
+                <i class="fas fa-whistle"></i>
+                {{ match.referee }}
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="match-teams">
+            <div class="team">
+                {% if match.home_team_crest %}
+                    <img src="{{ match.home_team_crest }}" alt="{{ match.home_team }}" class="team-logo">
+                {% endif %}
+                <div class="team-name">{{ match.home_team }}</div>
+                {% if match.status == 'LIVE' or match.status == 'FINISHED' %}
+                    <div class="cards-container">
+                        {% for i in range(match.yellow_cards_home) %}
+                            <div class="card yellow"></div>
+                        {% endfor %}
+                        {% for i in range(match.red_cards_home) %}
+                            <div class="card red"></div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="score-container">
+                {% if match.status == 'LIVE' or match.status == 'FINISHED' %}
+                    <div class="score">{{ match.score }}</div>
+                    <div class="half-time-score">HT: {{ match.half_time_score }}</div>
+                {% else %}
+                    <div class="score">vs</div>
+                {% endif %}
+            </div>
+
+            <div class="team">
+                {% if match.away_team_crest %}
+                    <img src="{{ match.away_team_crest }}" alt="{{ match.away_team }}" class="team-logo">
+                {% endif %}
+                <div class="team-name">{{ match.away_team }}</div>
+                {% if match.status == 'LIVE' or match.status == 'FINISHED' %}
+                    <div class="cards-container">
+                        {% for i in range(match.yellow_cards_away) %}
+                            <div class="card yellow"></div>
+                        {% endfor %}
+                        {% for i in range(match.red_cards_away) %}
+                            <div class="card red"></div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="match-status">
+            {% if match.status == 'LIVE' %}
+                LIVE - {{ match.minute }}'
+            {% elif match.status == 'FINISHED' %}
+                FINISHED
+            {% else %}
+                UPCOMING
+            {% endif %}
+        </div>
+    </div>
+
+    {% if match.status == 'LIVE' or match.status == 'FINISHED' %}
+        <div class="stats-container">
+            <div class="stats-card">
+                <div class="stats-title">Match Stats</div>
+                
+                <div class="stat-row">
+                    <div class="stat-value">{{ match.possession_home }}%</div>
+                    <div class="stat-label">Possession</div>
+                    <div class="stat-value">{{ match.possession_away }}%</div>
+                    <div class="stat-bar-container">
+                        <div class="stat-bar home" style="--bar-width: {{ match.possession_home }}%"></div>
+                        <div class="stat-bar away" style="--bar-width: {{ match.possession_away }}%"></div>
+                    </div>
+                </div>
+
+                <div class="stat-row">
+                    <div class="stat-value">{{ match.shots_home }}</div>
+                    <div class="stat-label">Shots</div>
+                    <div class="stat-value">{{ match.shots_away }}</div>
+                    <div class="stat-bar-container">
+                        {% set total_shots = match.shots_home + match.shots_away %}
+                        {% if total_shots > 0 %}
+                            <div class="stat-bar home" style="--bar-width: {{ (match.shots_home / total_shots * 100)|round }}%"></div>
+                            <div class="stat-bar away" style="--bar-width: {{ (match.shots_away / total_shots * 100)|round }}%"></div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="stat-row">
+                    <div class="stat-value">{{ match.shots_on_target_home }}</div>
+                    <div class="stat-label">Shots on Target</div>
+                    <div class="stat-value">{{ match.shots_on_target_away }}</div>
+                    <div class="stat-bar-container">
+                        {% set total_shots_on_target = match.shots_on_target_home + match.shots_on_target_away %}
+                        {% if total_shots_on_target > 0 %}
+                            <div class="stat-bar home" style="--bar-width: {{ (match.shots_on_target_home / total_shots_on_target * 100)|round }}%"></div>
+                            <div class="stat-bar away" style="--bar-width: {{ (match.shots_on_target_away / total_shots_on_target * 100)|round }}%"></div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats-card">
+                <div class="stats-title">Additional Stats</div>
+                
+                <div class="stat-row">
+                    <div class="stat-value">{{ match.corners_home }}</div>
+                    <div class="stat-label">Corners</div>
+                    <div class="stat-value">{{ match.corners_away }}</div>
+                    <div class="stat-bar-container">
+                        {% set total_corners = match.corners_home + match.corners_away %}
+                        {% if total_corners > 0 %}
+                            <div class="stat-bar home" style="--bar-width: {{ (match.corners_home / total_corners * 100)|round }}%"></div>
+                            <div class="stat-bar away" style="--bar-width: {{ (match.corners_away / total_corners * 100)|round }}%"></div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="stat-row">
+                    <div class="stat-value">{{ match.fouls_home }}</div>
+                    <div class="stat-label">Fouls</div>
+                    <div class="stat-value">{{ match.fouls_away }}</div>
+                    <div class="stat-bar-container">
+                        {% set total_fouls = match.fouls_home + match.fouls_away %}
+                        {% if total_fouls > 0 %}
+                            <div class="stat-bar home" style="--bar-width: {{ (match.fouls_home / total_fouls * 100)|round }}%"></div>
+                            <div class="stat-bar away" style="--bar-width: {{ (match.fouls_away / total_fouls * 100)|round }}%"></div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="stat-row">
+                    <div class="stat-value">{{ match.offsides_home }}</div>
+                    <div class="stat-label">Offsides</div>
+                    <div class="stat-value">{{ match.offsides_away }}</div>
+                    <div class="stat-bar-container">
+                        {% set total_offsides = match.offsides_home + match.offsides_away %}
+                        {% if total_offsides > 0 %}
+                            <div class="stat-bar home" style="--bar-width: {{ (match.offsides_home / total_offsides * 100)|round }}%"></div>
+                            <div class="stat-bar away" style="--bar-width: {{ (match.offsides_away / total_offsides * 100)|round }}%"></div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <script>
+        function toggleTheme() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const currentTheme = urlParams.get('dark_mode') === 'true';
+            urlParams.set('dark_mode', !currentTheme);
+            window.location.search = urlParams.toString();
+        }
+
+        function goBack() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const darkMode = urlParams.get('dark_mode');
+            const league = urlParams.get('league');
+            
+            let backUrl = '/';
+            const params = new URLSearchParams();
+            
+            if (darkMode !== null) {
+                params.set('dark_mode', darkMode);
+            }
+            if (league !== null) {
+                params.set('league', league);
+            }
+            
+            const queryString = params.toString();
+            if (queryString) {
+                backUrl += '?' + queryString;
+            }
+            
+            window.location.href = backUrl;
+        }
+
+        // Set stat bar widths using JavaScript
+        document.addEventListener('DOMContentLoaded', function() {
+            const statBars = document.querySelectorAll('.stat-bar');
+            statBars.forEach(bar => {
+                const width = bar.getAttribute('data-width');
+                if (width) {
+                    bar.style.width = width + '%';
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

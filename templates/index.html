@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Football Matches</title>
+    <style>
+        :root {
+            --bg-color: #f5f5f5;
+            --text-color: #333;
+            --primary-color: #38003c;
+            --secondary-color: #e90052;
+            --card-bg: white;
+            --hover-bg: #f0f0f0;
+            --border-color: #ddd;
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #1a1a1a;
+            --text-color: #fff;
+            --primary-color: #5c1f5f;
+            --secondary-color: #ff1a75;
+            --card-bg: #2d2d2d;
+            --hover-bg: #3d3d3d;
+            --border-color: #404040;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .filters {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        select, button {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 14px;
+            background-color: var(--card-bg);
+            color: var(--text-color);
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .active {
+            background-color: var(--secondary-color);
+        }
+
+        .match-container {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+            padding: 15px;
+        }
+
+        .match-date {
+            color: var(--text-color);
+            opacity: 0.7;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        .match-teams {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .team {
+            flex: 1;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .team-logo {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+            margin-bottom: 8px;
+        }
+
+        .team-name {
+            margin-top: 5px;
+        }
+
+        .vs-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 0 15px;
+            min-width: 60px;
+        }
+
+        .vs {
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .match-score {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            margin: 0 15px;
+        }
+
+        .match-minute {
+            color: var(--secondary-color);
+            font-weight: bold;
+        }
+
+        .no-matches {
+            text-align: center;
+            color: var(--text-color);
+            opacity: 0.7;
+            font-style: italic;
+        }
+
+        .custom-select {
+            position: relative;
+            width: 200px;
+        }
+
+        .custom-select select {
+            display: none;
+        }
+
+        .select-selected {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 12px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .select-selected:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .select-items {
+            position: absolute;
+            background-color: var(--card-bg);
+            top: 100%;
+            left: 0;
+            right: 0;
+            z-index: 99;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .select-items.active {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .select-items div {
+            color: var(--text-color);
+            padding: 12px 15px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+        }
+
+        .select-items div:hover {
+            background-color: var(--hover-bg);
+        }
+
+        .select-items div.selected {
+            background-color: var(--hover-bg);
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        .league-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 10px;
+            object-fit: contain;
+        }
+
+        .league-name {
+            flex-grow: 1;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            background-color: var(--secondary-color);
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body data-theme="{{ 'dark' if dark_mode else 'light' }}">
+    <button class="theme-toggle" onclick="toggleTheme()">
+        {{ '🌙' if not dark_mode else '☀️' }}
+    </button>
+    
+    <h1>Football Matches</h1>
+    
+    <div class="filters">
+        <div class="filter-group">
+            <label for="league">League:</label>
+            <div class="custom-select">
+                <select id="league" name="league">
+                    {% for id, name in leagues.items() %}
+                        <option value="{{ id }}" {% if id == selected_league %}selected{% endif %} data-icon="{{ league_icons[id] }}">{{ name }}</option>
+                    {% endfor %}
+                </select>
+                <div class="select-selected">
+                    <img src="{{ league_icons[selected_league] }}" class="league-icon" alt="League icon">
+                    <span class="league-name">{{ leagues[selected_league] }}</span>
+                </div>
+                <div class="select-items">
+                    {% for id, name in leagues.items() %}
+                        <div value="{{ id }}" {% if id == selected_league %}class="selected"{% endif %}>
+                            <img src="{{ league_icons[id] }}" class="league-icon" alt="League icon">
+                            <span class="league-name">{{ name }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="filter-group">
+            <button onclick="toggleFilter('live')" class="{% if show_live %}active{% endif %}">Live Matches</button>
+            <button onclick="toggleFilter('today')" class="{% if show_today %}active{% endif %}">Today's Matches</button>
+            <button onclick="toggleFilter('tomorrow')" class="{% if show_tomorrow %}active{% endif %}">Tomorrow's Matches</button>
+        </div>
+    </div>
+    
+    {% if matches %}
+        {% for match in matches %}
+            <div class="match-container" onclick="window.location.href=`/match/{{ match.id }}?dark_mode={{ 'true' if dark_mode else 'false' }}`" style="cursor: pointer;">
+                <div class="match-date">{{ match.date }}</div>
+                <div class="match-teams">
+                    <div class="team">
+                        {% if match.home_team_crest %}
+                            <img src="{{ match.home_team_crest }}" alt="{{ match.home_team }}" class="team-logo">
+                        {% endif %}
+                        <div class="team-name">{{ match.home_team }}</div>
+                    </div>
+                    {% if match.status == 'LIVE' %}
+                        <div class="vs-container">
+                            <span class="match-score">{{ match.score }}</span>
+                            <span class="match-minute">({{ match.minute }}')</span>
+                        </div>
+                    {% else %}
+                        <div class="vs-container">
+                            <span class="vs">vs</span>
+                        </div>
+                    {% endif %}
+                    <div class="team">
+                        {% if match.away_team_crest %}
+                            <img src="{{ match.away_team_crest }}" alt="{{ match.away_team }}" class="team-logo">
+                        {% endif %}
+                        <div class="team-name">{{ match.away_team }}</div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="no-matches">
+            No matches found with the selected filters.
+        </div>
+    {% endif %}
+
+    <script>
+        function toggleFilter(filter) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const currentValue = urlParams.get(filter) === 'true';
+            urlParams.set(filter, !currentValue);
+            window.location.search = urlParams.toString();
+        }
+
+        function toggleTheme() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const currentTheme = urlParams.get('dark_mode') === 'true';
+            urlParams.set('dark_mode', !currentTheme);
+            window.location.search = urlParams.toString();
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const customSelects = document.getElementsByClassName("custom-select");
+            
+            for (let i = 0; i < customSelects.length; i++) {
+                const selectElement = customSelects[i].getElementsByTagName("select")[0];
+                const selectedElement = customSelects[i].getElementsByClassName("select-selected")[0];
+                const itemsContainer = customSelects[i].getElementsByClassName("select-items")[0];
+                const items = itemsContainer.getElementsByTagName("div");
+                
+                function updateSelected() {
+                    const selectedOption = selectElement.options[selectElement.selectedIndex];
+                    const selectedIcon = selectedElement.querySelector(".league-icon");
+                    const selectedName = selectedElement.querySelector(".league-name");
+                    
+                    selectedIcon.src = selectedOption.getAttribute("data-icon");
+                    selectedName.textContent = selectedOption.text;
+                    
+                    for (let j = 0; j < items.length; j++) {
+                        items[j].classList.remove("selected");
+                        if (items[j].getAttribute("value") === selectElement.value) {
+                            items[j].classList.add("selected");
+                        }
+                    }
+                }
+                
+                selectedElement.addEventListener("click", function(e) {
+                    e.stopPropagation();
+                    closeAllSelect(this);
+                    itemsContainer.classList.toggle("active");
+                    this.classList.toggle("select-arrow-active");
+                });
+                
+                for (let j = 0; j < items.length; j++) {
+                    items[j].addEventListener("click", function(e) {
+                        e.stopPropagation();
+                        selectElement.value = this.getAttribute("value");
+                        updateSelected();
+                        itemsContainer.classList.remove("active");
+                        selectedElement.classList.remove("select-arrow-active");
+                        
+                        const urlParams = new URLSearchParams(window.location.search);
+                        urlParams.set("league", selectElement.value);
+                        window.location.search = urlParams.toString();
+                    });
+                }
+                
+                document.addEventListener("click", closeAllSelect);
+                
+                function closeAllSelect(elmnt) {
+                    const items = document.getElementsByClassName("select-items");
+                    const selected = document.getElementsByClassName("select-selected");
+                    
+                    for (let i = 0; i < items.length; i++) {
+                        if (elmnt !== selected[i]) {
+                            items[i].classList.remove("active");
+                            selected[i].classList.remove("select-arrow-active");
+                        }
+                    }
+                }
+                
+                updateSelected();
+            }
+        });
+    </script>
+</body>
+</html> 
