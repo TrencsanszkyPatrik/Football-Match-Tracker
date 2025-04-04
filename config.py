@@ -1,6 +1,0 @@
-FOOTBALL_DATA_API_KEY = "c5f1ac9a64a44a6b9436a3bb2d4e2ca9"
-
-
-
-
-
