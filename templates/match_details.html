@@ -17,6 +17,9 @@
             --success-color: #00ff85;
             --warning-color: #ffd700;
             --danger-color: #ff4444;
+            --win-color: #4CAF50;
+            --draw-color: #FFC107;
+            --lose-color: #f44336;
         }
 
         [data-theme="dark"] {
@@ -278,6 +281,84 @@
                 font-size: 2.5em;
             }
         }
+
+        .last-matches-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            padding: 10px;
+        }
+
+        .last-matches-stats .stat-row {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 10px;
+            background-color: var(--hover-bg);
+            border-radius: 8px;
+            transition: transform 0.3s ease;
+        }
+
+        .last-matches-stats .stat-row:hover {
+            transform: translateY(-2px);
+        }
+
+        .last-matches-stats .stat-label {
+            font-size: 0.9em;
+            color: var(--text-color);
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+
+        .last-matches-stats .stat-value {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .no-stats-message {
+            text-align: center;
+            color: var(--text-color);
+            opacity: 0.8;
+        }
+
+        .form-result {
+            width: 30px;
+            height: 30px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 5px;
+            border-radius: 4px;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .form-W {
+            background-color: var(--win-color);
+        }
+        
+        .form-D {
+            background-color: var(--draw-color);
+        }
+        
+        .form-L {
+            background-color: var(--lose-color);
+        }
+
+        .team-form {
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+            color: var(--text-color);
+            opacity: 0.8;
+        }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -320,6 +401,12 @@
                     <img src="{{ match.home_team_crest }}" alt="{{ match.home_team }}" class="team-logo">
                 {% endif %}
                 <div class="team-name">{{ match.home_team }}</div>
+                <div class="team-form">
+                    <span class="form-label">Last 3 matches:</span>
+                    {% for result in match.home_team_stats %}
+                        <div class="form-result form-{{ result }}">{{ result }}</div>
+                    {% endfor %}
+                </div>
                 {% if match.status == 'LIVE' or match.status == 'FINISHED' %}
                     <div class="cards-container">
                         {% for i in range(match.yellow_cards_home) %}
@@ -346,6 +433,12 @@
                     <img src="{{ match.away_team_crest }}" alt="{{ match.away_team }}" class="team-logo">
                 {% endif %}
                 <div class="team-name">{{ match.away_team }}</div>
+                <div class="team-form">
+                    <span class="form-label">Last 3 matches:</span>
+                    {% for result in match.away_team_stats %}
+                        <div class="form-result form-{{ result }}">{{ result }}</div>
+                    {% endfor %}
+                </div>
                 {% if match.status == 'LIVE' or match.status == 'FINISHED' %}
                     <div class="cards-container">
                         {% for i in range(match.yellow_cards_away) %}
@@ -373,11 +466,11 @@
     {% if match.status == 'LIVE' or match.status == 'FINISHED' %}
         <div class="stats-container">
             <div class="stats-card">
-                <div class="stats-title">Match Stats</div>
+                <div class="stats-title">Match Statistics</div>
                 
                 <div class="stat-row">
                     <div class="stat-value">{{ match.possession_home }}%</div>
-                    <div class="stat-label">Possession</div>
+                    <div class="stat-label">Ball Possession</div>
                     <div class="stat-value">{{ match.possession_away }}%</div>
                     <div class="stat-bar-container">
                         <div class="stat-bar home" style="--bar-width: {{ match.possession_home }}%"></div>
@@ -388,6 +481,7 @@
                 <div class="stat-row">
                     <div class="stat-value">{{ match.shots_home }}</div>
                     <div class="stat-label">Shots</div>
+                    <div class="stat-label">Lövések</div>
                     <div class="stat-value">{{ match.shots_away }}</div>
                     <div class="stat-bar-container">
                         {% set total_shots = match.shots_home + match.shots_away %}
@@ -400,7 +494,7 @@
 
                 <div class="stat-row">
                     <div class="stat-value">{{ match.shots_on_target_home }}</div>
-                    <div class="stat-label">Shots on Target</div>
+                    <div class="stat-label">Kaput Eltaláló Lövések</div>
                     <div class="stat-value">{{ match.shots_on_target_away }}</div>
                     <div class="stat-bar-container">
                         {% set total_shots_on_target = match.shots_on_target_home + match.shots_on_target_away %}
@@ -413,11 +507,11 @@
             </div>
 
             <div class="stats-card">
-                <div class="stats-title">Additional Stats</div>
+                <div class="stats-title">További Statisztikák</div>
                 
                 <div class="stat-row">
                     <div class="stat-value">{{ match.corners_home }}</div>
-                    <div class="stat-label">Corners</div>
+                    <div class="stat-label">Szögletek</div>
                     <div class="stat-value">{{ match.corners_away }}</div>
                     <div class="stat-bar-container">
                         {% set total_corners = match.corners_home + match.corners_away %}
@@ -430,7 +524,7 @@
 
                 <div class="stat-row">
                     <div class="stat-value">{{ match.fouls_home }}</div>
-                    <div class="stat-label">Fouls</div>
+                    <div class="stat-label">Szabálytalanságok</div>
                     <div class="stat-value">{{ match.fouls_away }}</div>
                     <div class="stat-bar-container">
                         {% set total_fouls = match.fouls_home + match.fouls_away %}
@@ -443,7 +537,7 @@
 
                 <div class="stat-row">
                     <div class="stat-value">{{ match.offsides_home }}</div>
-                    <div class="stat-label">Offsides</div>
+                    <div class="stat-label">Lesek</div>
                     <div class="stat-value">{{ match.offsides_away }}</div>
                     <div class="stat-bar-container">
                         {% set total_offsides = match.offsides_home + match.offsides_away %}
@@ -459,23 +553,28 @@
 
     <script>
         function toggleTheme() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const currentTheme = urlParams.get('dark_mode') === 'true';
-            urlParams.set('dark_mode', !currentTheme);
-            window.location.search = urlParams.toString();
+            const body = document.body;
+            const currentTheme = body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            
+            // Update body attribute
+            body.setAttribute('data-theme', newTheme);
+            
+            // Update theme toggle button content
+            const themeToggle = document.querySelector('.theme-toggle');
+            themeToggle.innerHTML = newTheme === 'dark' ? '☀️' : '🌙';
+            
+            // Store preference in localStorage
+            localStorage.setItem('theme', newTheme);
         }
 
         function goBack() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const darkMode = urlParams.get('dark_mode');
-            const league = urlParams.get('league');
+            const theme = localStorage.getItem('theme') || 'light';
+            const league = new URLSearchParams(window.location.search).get('league');
             
             let backUrl = '/';
             const params = new URLSearchParams();
             
-            if (darkMode !== null) {
-                params.set('dark_mode', darkMode);
-            }
             if (league !== null) {
                 params.set('league', league);
             }
@@ -488,8 +587,16 @@
             window.location.href = backUrl;
         }
 
-        // Set stat bar widths using JavaScript
+        // Initialize theme from localStorage on page load
         document.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                document.body.setAttribute('data-theme', savedTheme);
+                const themeToggle = document.querySelector('.theme-toggle');
+                themeToggle.innerHTML = savedTheme === 'dark' ? '☀️' : '🌙';
+            }
+
+            // Set stat bar widths
             const statBars = document.querySelectorAll('.stat-bar');
             statBars.forEach(bar => {
                 const width = bar.getAttribute('data-width');
